@@ -1,0 +1,103 @@
+name: Upload to staging
+
+on:
+  workflow_call:
+    inputs:
+      run-id:
+        description: "The ID of the workflow run that produced the artifact"
+        required: true
+        type: number
+      pr-number:
+        description: "The number of the pull request"
+        required: true
+        type: number
+      pr-headsha:
+        description: "The SHA of the head commit of the pull request"
+        required: true
+        type: string
+      project-name:
+        description: "The name of the Cloudflare Pages project"
+        required: true
+        type: string
+
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        description: "API token for Cloudflare"
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        description: "Account ID for Cloudflare"
+        required: true
+
+jobs:
+  start-deployment:
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+
+    steps:
+      - uses: myrotvorets/set-commit-status-action@v2.0.1
+        with:
+          status: pending
+          sha: ${{ inputs.pr-headsha }}
+          context: 'Upload to Cloudflare'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  stage-from-artifact:
+    runs-on: ubuntu-latest
+    needs: start-deployment
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.deployment-url }}
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run-id }}
+          name: "site-build"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Unpack artifact
+        run: |
+          tar -xzf site.tgz
+          rm site.tgz
+
+      - name: Upload to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        id: deploy
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name ${{ inputs.project-name }} --branch pr${{ inputs.pr-number }}
+
+  finish-deployment:
+    runs-on: ubuntu-latest
+    needs: 
+      - stage-from-artifact
+      - start-deployment
+    if: ${{ needs.stage-from-artifact.outputs.deployment_url != '' }}
+    permissions:
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - uses: myrotvorets/set-commit-status-action@v2.0.1
+        if: ${{ always() }}
+        env:
+          DEPLOY_SUCCESS: Successfully staged preview.
+          DEPLOY_FAILURE: Failed to stage preview.
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          sha: ${{ inputs.pr-headsha }}
+          context: 'Upload to Cloudflare'
+          description: ${{ job.status == 'success' && env.DEPLOY_SUCCESS || env.DEPLOY_FAILURE }}
+
+      - name: Post comment with metadata
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ inputs.pr-number }}
+          message: |
+            This PR has been staged at ${{ needs.stage-from-artifact.outputs.deployment_url }}.
+
+            It has been updated for commit ${{ inputs.pr-headsha }}.
