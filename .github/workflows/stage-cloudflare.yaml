@@ -19,6 +19,10 @@ on:
         description: "The name of the Cloudflare Pages project"
         required: true
         type: string
+      html-dir:
+        description: "Root directory name for the site HTML artifact (usually 'public' for Hugo, '_site' for Jekyll, etc.)"
+        required: true
+        type: string
 
     secrets:
       CLOUDFLARE_API_TOKEN:
@@ -59,8 +63,8 @@ jobs:
 
       - name: Unpack artifact
         run: |
-          tar -xzf site.tgz
-          rm site.tgz
+          tar -xzf site.tar.gz
+          rm site.tar.gz
 
       - name: Upload to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -68,7 +72,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy _site --project-name ${{ inputs.project-name }} --branch pr${{ inputs.pr-number }}
+          command: pages deploy ${{ inputs.html-dir }} --project-name ${{ inputs.project-name }} --branch pr${{ inputs.pr-number }}
 
   finish-deployment:
     runs-on: ubuntu-latest

@@ -3,10 +3,18 @@ name: Deploy to production
 on:
   workflow_call:
     inputs:
-      run_id:
+      run-id:
         description: "The ID of the workflow run that produced the artifact"
         required: true
         type: number
+      project-name:
+        description: "Name of the project in Cloudflare Pages"
+        required: true
+        type: string
+      html-dir:
+        description: "Root directory name for the site HTML artifact (usually 'public' for Hugo, '_site' for Jekyll, etc.)"
+        required: true
+        type: string
     secrets:
       CLOUDFLARE_API_TOKEN:
         description: "API token for Cloudflare"
@@ -22,18 +30,18 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          run-id: ${{ inputs.run_id }}
+          run-id: ${{ inputs.run-id }}
           name: "site-build"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unpack artifact
         run: |
-          tar -xzf site.tgz
-          rm site.tgz
+          tar -xzf site.tar.gz
+          rm site.tar.gz
 
       - name: Upload to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy _site --project-name omsf-playbooks --branch main
+          command: pages deploy ${{ inputs.html-dir }} --project-name ${{ inputs.project-name }} --branch main
