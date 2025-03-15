@@ -1,0 +1,39 @@
+name: Deploy to production
+
+on:
+  workflow_call:
+    inputs:
+      run_id:
+        description: "The ID of the workflow run that produced the artifact"
+        required: true
+        type: number
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        description: "API token for Cloudflare"
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        description: "Account ID for Cloudflare"
+        required: true
+
+jobs:
+  deploy-from-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run_id }}
+          name: "site-build"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Unpack artifact
+        run: |
+          tar -xzf site.tgz
+          rm site.tgz
+
+      - name: Upload to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name omsf-playbooks --branch main

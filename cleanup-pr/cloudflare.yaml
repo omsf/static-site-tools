@@ -1,0 +1,58 @@
+name: Cleanup staging
+description: Cleanup staging environment; this occurs on PR merge or close
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: 'Pull Request Number'
+        required: true
+        type: number
+      project_name:
+        description: 'Cloudflare Pages Project Name'
+        required: true
+        type: string
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        description: 'Cloudflare API Token'
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        description: 'Cloudflare Account ID'
+        required: true
+
+jobs:
+  cleanup-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Cloudflare Preview Deployment
+        run: |
+          BRANCH_NAME="pr${{ inputs.pr_number }}"
+          echo "Deleting all deployments for branch: $BRANCH_NAME"
+
+          DEPLOYMENTS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ inputs.project_name }}/deployments" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json")
+
+          IS_SUCCESS=$(echo "$DEPLOYMENTS" | jq -r '.success')
+          if [ "$IS_SUCCESS" != "true" ]; then
+            echo "Cloudflare API call was not successful. Response:"
+            echo "$DEPLOYMENTS"
+            exit 1
+          fi
+
+          DEPLOYMENT_IDS=$(echo "$DEPLOYMENTS" | jq -r --arg branch "$BRANCH_NAME" '.result[]? | select(.deployment_trigger.metadata.branch == $branch) | .id')
+          if [ -z "$DEPLOYMENT_IDS" ]; then
+            echo "No deployments found for branch: $BRANCH_NAME"
+            exit 0
+          fi
+
+          echo "Deleting the following deployments:"
+          echo "$DEPLOYMENT_IDS"
+
+          for ID in $DEPLOYMENT_IDS; do
+            echo "Deleting Deployment ID: $ID"
+            curl -s -X DELETE \
+              "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ inputs.project_name }}/deployments/$ID?force=true" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -H "Content-Type: application/json"
+          done

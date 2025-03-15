@@ -1,0 +1,36 @@
+name: Build Hugo site
+description: Build a Hugo site
+
+inputs:
+  base-url: 
+    description: The base URL for the site
+    required: false
+    default: ""
+  hugo-version:
+    description: The version of Hugo to use
+    required: false
+    default: "0.141.0"
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Hugo and Dart SASS
+      shell: bash
+      env:
+        HUGO_VERSION: ${{ inputs.hugo-version }}
+      run: |
+        wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
+          && sudo dpkg -i ${{ runner.temp }}/hugo.deb
+        sudo snap install dart-sass
+    - name: Get modules
+      shell: bash
+      run: |
+        hugo mod get -u
+    - name: Build the site
+      shell: bash
+      run: |
+        hugo --gc --minify --baseURL="${{ inputs.base-url }}"
+    - name: Move the site to the output directory
+      shell: bash
+      run: |
+        mv public _site
