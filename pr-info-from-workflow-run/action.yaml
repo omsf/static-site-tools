@@ -1,0 +1,47 @@
+name: Extract PR information from a workflow run event
+description: >
+  When a workflow_run workflow is triggered by a workflow that was, in turn,
+  triggered by a pull request, sometimes you need the detailed information
+  about the pull request. This action extracts the PR information from the
+  workflow run event and sets it as output variables.
+
+outputs:
+  pr-number:
+    description: The number of the pull request.
+    value: ${{ steps.extract.outputs.pr-number }}
+  pr-headsha:
+    description: The head SHA of the pull request.
+    value: ${{ steps.extract.outputs.pr-headsha }}
+  #pr-title:
+    #description: The title of the pull request.
+    #value: ${{ steps.extract.outputs.pr-title }}
+  #pr-body:
+    #description: The body of the pull request.
+    #value: ${{ steps.extract.outputs.pr-body }}
+  #pr-author:
+    #description: The author of the pull request.
+    #value: ${{ steps.extract.outputs.pr-author }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Extract PR metadata
+      shell: bash
+      id: extract
+      run: |
+        PR_NUMBER=$(jq -r '.workflow_run.pull_requests[0].number' "$GITHUB_EVENT_PATH")
+        HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
+        #PR_TITLE=$(jq -r '.workflow_run.pull_requests[0].title' "$GITHUB_EVENT_PATH")
+        #PR_BODY=$(jq -r '.workflow_run.pull_requests[0].body' "$GITHUB_EVENT_PATH")
+        #PR_AUTHOR=$(jq -r '.workflow_run.pull_requests[0].user.login' "$GITHUB_EVENT_PATH")
+
+        echo "pr-number=$PR_NUMBER" | tee -a $GITHUB_OUTPUT
+        echo "pr-headsha=$HEAD_SHA" | tee -a $GITHUB_OUTPUT
+        #echo "pr-title=$PR_TITLE" | tee -a $GITHUB_OUTPUT
+
+        # The body of the PR can be multiline, so we wrap it <<EOF
+        #echo "pr-body<<EOF" | tee -a $GITHUB_OUTPUT
+        #echo "$PR_BODY" | tee -a $GITHUB_OUTPUT
+        #echo "EOF" | tee -a $GITHUB_OUTPUT
+
+        #echo "pr-author=$PR_AUTHOR" | tee -a $GITHUB_OUTPUT
