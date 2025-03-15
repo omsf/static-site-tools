@@ -30,7 +30,3 @@ runs:
       shell: bash
       run: |
         hugo --gc --minify --baseURL="${{ inputs.base-url }}"
-    - name: Move the site to the output directory
-      shell: bash
-      run: |
-        mv public _site
