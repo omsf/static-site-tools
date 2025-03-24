@@ -14,10 +14,10 @@ inputs:
 outputs:
   pr-number:
     description: The number of the pull request.
-    value: ${{ steps.extract.outputs.pr-number }}
+    value: ${{ steps.prnum.outputs.pr-number }}
   pr-headsha:
     description: The head SHA of the pull request.
-    value: ${{ steps.extract.outputs.pr-headsha }}
+    value: ${{ steps.headsha.outputs.pr-headsha }}
   #pr-title:
     #description: The title of the pull request.
     #value: ${{ steps.extract.outputs.pr-title }}
@@ -31,35 +31,39 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Extract PR metadata
+    - name: Extract HEAD SHA
+      id: headsha
       shell: bash
-      id: extract
-      run: |
+      run:
         HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
         echo "pr-headsha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
-
-        IFS='/' read -r OWNER REPO <<< "$GITHUB_REPOSITORY"
-        echo $OWNER
-        echo $REPO
-
-        GRAPHQL_QUERY=$(cat <<EOF
-        {
-          "query": "query({ repository(owner: \$owner, name: \$name) { pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) { nodes { number headRefOid } } } }",
-          "variables": {
-            "owner": "$OWNER",
-            "name": "$REPO"
+    - name: Get PRs
+      uses: octokit/graphql-action@v2.x
+      id: prs
+      with:
+        query: |
+          query($owner: String!, $name: String!) {
+            repository(owner: $owner, name: $name) {
+              pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
+                nodes {
+                  number
+                  headRefOid
+                }
+              }
+            }
           }
-        }
-        EOF
-        )
+        owner: ${{ github.repository_owner }}
+        name: ${{ github.event.repository.name }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
 
-        echo $GRAPHQL_QUERY
+    - name: Extract PR data for HEAD SHA
+      shell: bash
+      id: prnum
+      run: |
 
-        RESPONSE=$(curl -s -X POST https://api.github.com/graphql \
-          -H "Authorization: bearer ${{ inputs.github-token }}" \
-          --data "$GRAPHQL_QUERY")
-
-        echo $RESPONSE
+        echo ${{ steps.prs.outputs.data }}
+        RESPONSE=$(echo "${{ steps.prs.outputs.data }}" | jq -r '.data')
 
         MATCHING_PRS=$(echo "$RESPONSE" | jq --arg sha "$HEAD_SHA" '.data.repository.pullRequests.nodes | map(select(.headRefOid == $sha))')
         echo $MATCHING_PRS
