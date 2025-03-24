@@ -44,7 +44,7 @@ runs:
       with:
         query: |
           query {
-            repository(owner: $owner, name: $name) {
+            repository(owner: ${{ github.repository_owner }} , name: ${{ github.event.repository.name }}) {
               pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
                 nodes {
                   number
@@ -53,9 +53,6 @@ runs:
               }
             }
           }
-        variables: |
-          owner: ${{ github.repository_owner }}
-          name: ${{ github.event.repository.name }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
 
