@@ -36,9 +36,6 @@ runs:
       shell: bash
       run: |
         HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
-        echo ${{ inputs.github-token }}
-        echo ${{ secrets.GITHUB_TOKEN }}
-        echo [ ${{ inputs.github-token }} == ${{ secrets.GITHUB_TOKEN }} ]
         echo "pr-headsha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
 
     - name: Get PRs
