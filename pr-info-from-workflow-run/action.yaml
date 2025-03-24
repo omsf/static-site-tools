@@ -54,9 +54,8 @@ runs:
               }
             }
           }
-        variables:
-          owner: ${{ github.repository_owner }}
-          name: ${{ github.event.repository.name }}
+        owner: ${{ github.repository_owner }}
+        name: ${{ github.event.repository.name }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
 
