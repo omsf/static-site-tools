@@ -37,12 +37,13 @@ runs:
       run:
         HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
         echo "pr-headsha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
+
     - name: Get PRs
       uses: octokit/graphql-action@v2.x
       id: prs
       with:
         query: |
-          query($owner: String!, $name: String!) {
+          query {
             repository(owner: $owner, name: $name) {
               pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
                 nodes {
