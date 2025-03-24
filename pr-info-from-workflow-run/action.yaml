@@ -43,7 +43,7 @@ runs:
         echo $OWNER
         echo $REPO
 
-        read -r -d '' GRAPHQL_QUERY <<EOF
+        GRAPHQL_QUERY=$(cat <<EOF
         {
           "query": "query({ repository(owner: \$owner, name: \$name) { pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) { nodes { number headRefOid } } } }",
           "variables": {
@@ -52,6 +52,7 @@ runs:
           }
         }
         EOF
+        )
 
         echo $GRAPHQL_QUERY
 
