@@ -39,16 +39,23 @@ runs:
         HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
         echo "pr-headsha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
 
-        # get the PR number from PRs with this HEAD_SHA
-        API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls"
-        echo $API_URL  # TODO DEBUG
-        RESPONSE=$(curl -L \
-                    -H "Accept: application/vnd.github+json" \
-                    -H "Authorization: Bearer ${{ inputs.github-token }}" \
-                    -H "X-GitHub-Api-Version: 2022-11-28" \
-                    $API_URL)
-        echo "API response: $RESPONSE"  # TODO DEBUG
-        MATCHING_PRS=$(echo "$RESPONSE" | jq --arg sha "$HEAD_SHA" '[.[] | select(.head.sha == $sha)]')
+        IFS='/' read -r OWNER REPO <<< "$GITHUB_REPOSITORY"
+        read -r -d '' GRAPHQL_QUERY <<EOF
+        {
+          "query": "query({ repository(owner: \$owner, name: \$name) { pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) { nodes { number headRefOid } } } }",
+          "variables": {
+            "owner": "$OWNER",
+            "name": "$REPO"
+          }
+        }
+        EOF
+
+        RESPONSE=$(curl -s -X POST https://api.github.com/graphql \
+          -H "Authorization: bearer ${GITHUB_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data "$GRAPHQL_QUERY")
+
+        MATCHING_PRS=$(echo "$RESPONSE" | jq --arg sha "$HEAD_SHA" '.data.repository.pullRequests.nodes | map(select(.headRefOid == $sha))')
         COUNT=$(echo "$MATCHING_PRS" | jq 'length')
 
         if [ "$COUNT" -eq 0 ]; then
