@@ -10,6 +10,10 @@ inputs:
     description: The version of Hugo to use
     required: false
     default: "0.141.0"
+  source-directory:
+    description: The directory containing the Hugo site
+    required: false
+    default: "."
 
 runs:
   using: 'composite'
