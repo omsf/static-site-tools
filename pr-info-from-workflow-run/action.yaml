@@ -44,7 +44,7 @@ runs:
       with:
         query: |
           query {
-            repository(owner: ${{ github.repository_owner }} , name: ${{ github.event.repository.name }}) {
+            repository(owner: "${{ github.repository_owner }}", name: "${{ github.event.repository.name }}") {
               pullRequests(first: 100, states: [OPEN], orderBy: { field: UPDATED_AT, direction: DESC }) {
                 nodes {
                   number
