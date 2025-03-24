@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete Cloudflare Preview Deployment
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          CLOUDFLARE_PROJECT_NAME: ${{ inputs.project_name }}
         run: |
           BRANCH_NAME="pr${PR_NUMBER}"
           echo "Deleting all non-aliased deployments for branch: $BRANCH_NAME"
