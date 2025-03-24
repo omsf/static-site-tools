@@ -47,7 +47,7 @@ jobs:
           DEPLOYMENT_IDS=$(echo "$DEPLOYMENTS" | jq -r --arg branch "$BRANCH_NAME" '
             .result[]?
             | select(.deployment_trigger.metadata.branch == $branch)
-            | select((.aliases? | length) == 0)
+            | select((.aliases // [] | length) == 0)
             | .id
           ')
 
