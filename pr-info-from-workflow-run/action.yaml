@@ -63,7 +63,7 @@ runs:
 
         echo '${{ steps.prs.outputs.data }}'
 
-        MATCHING_PRS=$(echo '${{ steps.prs.outputs.data }}' | jq --arg sha "$HEAD_SHA" '.data.repository.pullRequests.nodes | map(select(.headRefOid == $sha))')
+        MATCHING_PRS=$(echo '${{ steps.prs.outputs.data }}' | jq --arg sha "$HEAD_SHA" '.repository.pullRequests.nodes | map(select(.headRefOid == $sha))')
         echo $MATCHING_PRS
         COUNT=$(echo "$MATCHING_PRS" | jq 'length')
 
