@@ -5,6 +5,13 @@ description: >
   about the pull request. This action extracts the PR information from the
   workflow run event and sets it as output variables.
 
+
+inputs:
+  github-token:
+    description: 'The GitHub token to use for API requests.'
+    required: true
+    default: ${{ github.token }}
+
 outputs:
   pr-number:
     description: The number of the pull request.
@@ -36,7 +43,7 @@ runs:
         API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls"
         RESPONSE=$(curl -L \
                     -H "Accept: application/vnd.github+json" \
-                    -H "Authorization: Bearer $GITHUB_TOKEN" \
+                    -H "Authorization: Bearer {{ inputs.github-token }}" \
                     -H "X-GitHub-Api-Version: 2022-11-28" \
                     $API_URL)
         echo "API response: $RESPONSE"  # TODO DEBUG
