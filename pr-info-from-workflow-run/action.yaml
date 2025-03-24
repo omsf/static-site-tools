@@ -36,6 +36,7 @@ runs:
       shell: bash
       run:
         HEAD_SHA=$(jq -r '.workflow_run.head_commit.id' "$GITHUB_EVENT_PATH")
+        echo $GITHUB_EVENT_PATH
         echo "pr-headsha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
 
     - name: Get PRs
@@ -53,8 +54,9 @@ runs:
               }
             }
           }
-        owner: ${{ github.repository_owner }}
-        name: ${{ github.event.repository.name }}
+        variables:
+          owner: ${{ github.repository_owner }}
+          name: ${{ github.event.repository.name }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
 
