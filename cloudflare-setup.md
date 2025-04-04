@@ -24,15 +24,15 @@ Pages projects, and using individual user accounts for development and debug.
 2. Once you're signed in as the organization, invite your work email to become
    a member:
 
-   a. Scroll down on the left side until you see "Manage Account". Clicking on
+   1. Scroll down on the left side until you see "Manage Account". Clicking on
       that will open the "Members" management.
-   b. Click "Invite" to start inviting a member, and fill in your work email address.
-   c. For scope, choose "All domains."
-   d. For role, the main administrator should probably be "Super Administrator"
+   2. Click "Invite" to start inviting a member, and fill in your work email address.
+   3. For scope, choose "All domains."
+   4. For role, the main administrator should probably be "Super Administrator"
       (the other option being "Administrator", where the only difference is
       that as Administrator, you wouldn't be able to manage members.)
-   e. Scroll to the bottom and click "Continue to Summary"
-   f. Double check that everything is correct, then click "Invite"
+   5. Scroll to the bottom and click "Continue to Summary"
+   6. Double check that everything is correct, then click "Invite"
 
 3. Log out of the org's Cloudflare account. (Otherwise you'll get an error when
    you click on the invitation.)
