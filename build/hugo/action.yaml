@@ -14,6 +14,10 @@ inputs:
     description: The directory containing the Hugo site
     required: false
     default: "."
+  output-directory:
+    description: The directory to output the built site
+    required: false
+    default: "public"
 
 runs:
   using: 'composite'
@@ -33,4 +37,4 @@ runs:
     - name: Build the site
       shell: bash
       run: |
-        hugo --gc --minify --baseURL="${{ inputs.base-url }}"
+        hugo --gc --minify --baseURL="${{ inputs.base-url }}" -s ${ inputs.source-directory } --destination ${ inputs.output-directory }
