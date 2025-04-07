@@ -58,7 +58,7 @@ flowchart LR
    A([PR opened/updated]) -- pull_request event --> B[build-pr.yaml]
    B -- upload_artifact --> C[site.tar.gz]
    C -- download_artifact  --> D[stage-cloudflare.yaml]
-   A -- workflow_run event --> D
+   B -- workflow_run event --> D
 
    style D color:#f00,stroke:#f00,fill:#fee
 ```
@@ -81,7 +81,7 @@ flowchart LR
    A([main branch commit]) -- push event --> B[build-push.yaml]
    B -- upload_artifact --> C[site.tar.gz]
    C -- download_artifact --> D[prod-cloudflare.yaml]
-   A -- workflow_run event --> D
+   B -- workflow_run event --> D
 
    style D color:#f00,stroke:#f00,fill:#fee
 ```
