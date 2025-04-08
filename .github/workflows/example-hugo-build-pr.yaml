@@ -23,7 +23,7 @@ jobs:
       - name: Test site
         uses: omsf/static-site-tools/common-tests@main
         with:
-          site-directory: public
+          site-directory: "example-hugo/public"
           base-url: ""
 
       - name: Make artifact
