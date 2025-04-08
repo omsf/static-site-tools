@@ -14,7 +14,8 @@ jobs:
           submodules: 'recursive'
 
       - name: Build site
-        uses: omsf/static-site-tools/build/hugo@example-hugo
+        #uses: omsf/static-site-tools/build/hugo@main
+        uses: ./build/hugo  # dev
         with:
           base-url: ""
           source-directory: "example-hugo"
