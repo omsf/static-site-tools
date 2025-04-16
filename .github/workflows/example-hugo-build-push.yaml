@@ -27,7 +27,7 @@ jobs:
 
       - name: Make artifact
         shell: bash
-        run: tar czf site.tar.gz ${{ env.HUGO_SOURCE_DIR }}/${{ env.HUGO_OUTPUT_DIR }}
+        run: tar czf site.tar.gz -C ${{ env.HUGO_SOURCE_DIR }} ${{ env.HUGO_OUTPUT_DIR }}
 
       - name: Upload artifact
         if: ${{ github.event_name != 'schedule' }}
