@@ -28,7 +28,7 @@ jobs:
 
       - name: Make artifact
         shell: bash
-        run: tar czf site.tar.gz public
+        run: tar czf site.tar.gz example-hugo/public
 
       - name: Upload artifact
         if: ${{ github.event_name != 'schedule' }}
