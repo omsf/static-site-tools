@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  HUGO_SOURCE_DIR: "example-hugo"
+  HUGO_OUTPUT_DIR: "public"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,19 +22,19 @@ jobs:
         uses: ./build/hugo  # dev
         with:
           base-url: ""
-          source-directory: ${{ vars.HUGO_SOURCE_DIR }}
-          output-directory: ${{ vars.HUGO_OUTPUT_DIR }}
+          source-directory: ${{ env.HUGO_SOURCE_DIR }}
+          output-directory: ${{ env.HUGO_OUTPUT_DIR }}
 
 
       - name: Test site
         uses: omsf/static-site-tools/common-tests@main
         with:
-          site-directory: ${{ vars.HUGO_SOURCE_DIR }}/${{ vars.HUGO_OUTPUT_DIR}}
+          site-directory: ${{ env.HUGO_SOURCE_DIR }}/${{ env.HUGO_OUTPUT_DIR}}
           base-url: ""
 
       - name: Make artifact
         shell: bash
-        run: tar czf site.tar.gz ${{ vars.HUGO_SOURCE_DIR }}/${{ vars.HUGO_OUTPUT_DIR }}
+        run: tar czf site.tar.gz ${{ env.HUGO_SOURCE_DIR }}/${{ env.HUGO_OUTPUT_DIR }}
 
       - name: Upload artifact
         if: ${{ github.event_name != 'schedule' }}
