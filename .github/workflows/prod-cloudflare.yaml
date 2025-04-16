@@ -38,6 +38,7 @@ jobs:
         run: |
           tar -xzf site.tar.gz
           rm site.tar.gz
+          ls -la
 
       - name: Upload to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
