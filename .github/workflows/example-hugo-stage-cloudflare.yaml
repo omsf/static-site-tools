@@ -6,9 +6,12 @@ on:
     types:
       - completed
 
+env:
+  HUGO_OUTPUT_DIR: public
+
 jobs:
   get-metadata:
-    if: ${{ github.repository == 'omsf/playbooks-website' }}
+    if: ${{ github.repository == vars.MAIN_REPO }}
     runs-on: ubuntu-latest
     outputs:
       pr_number: ${{ steps.pr-metadata.outputs.pr-number }}
@@ -22,7 +25,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   stage:
-    if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == 'omsf/playbooks-website') }}
+    if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == vars.MAIN_REPO) }}
     needs: get-metadata
     uses: omsf/static-site-tools/.github/workflows/stage-cloudflare.yaml@main
     permissions:
@@ -33,7 +36,7 @@ jobs:
       pr-number: ${{ fromJSON(needs.get-metadata.outputs.pr_number) }}  # convert to int
       pr-headsha: ${{ needs.get-metadata.outputs.pr_headsha }}
       project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
-      html-dir: public
+      html-dir: ${{ env.HUGO_OUTPUT_DIR }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

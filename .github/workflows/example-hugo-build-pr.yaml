@@ -7,6 +7,7 @@ on:
 
 env:
   HUGO_SOURCE_DIR: "example-hugo"
+  HUGO_BASE_URL: ""
   HUGO_OUTPUT_DIR: "public"
 
 jobs:
@@ -21,16 +22,15 @@ jobs:
         #uses: omsf/static-site-tools/build/hugo@main
         uses: ./build/hugo  # dev
         with:
-          base-url: ""
+          base-url: ${{ env.HUGO_BASE_URL }}
           source-directory: ${{ env.HUGO_SOURCE_DIR }}
           output-directory: ${{ env.HUGO_OUTPUT_DIR }}
-
 
       - name: Test site
         uses: omsf/static-site-tools/common-tests@main
         with:
           site-directory: ${{ env.HUGO_SOURCE_DIR }}/${{ env.HUGO_OUTPUT_DIR}}
-          base-url: ""
+          base-url: ${{ env.HUGO_BASE_URL }}
 
       - name: Make artifact
         shell: bash
