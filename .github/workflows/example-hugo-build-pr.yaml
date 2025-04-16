@@ -18,17 +18,19 @@ jobs:
         uses: ./build/hugo  # dev
         with:
           base-url: ""
-          source-directory: "example-hugo"
+          source-directory: ${{ vars.HUGO_SOURCE_DIR }}
+          output-directory: ${{ vars.HUGO_OUTPUT_DIR }}
+
 
       - name: Test site
         uses: omsf/static-site-tools/common-tests@main
         with:
-          site-directory: "example-hugo/public"
+          site-directory: ${{ vars.HUGO_SOURCE_DIR }}/${{ vars.HUGO_OUTPUT_DIR}}
           base-url: ""
 
       - name: Make artifact
         shell: bash
-        run: tar czf site.tar.gz example-hugo/public
+        run: tar czf site.tar.gz ${{ vars.HUGO_SOURCE_DIR }}/${{ vars.HUGO_OUTPUT_DIR }}
 
       - name: Upload artifact
         if: ${{ github.event_name != 'schedule' }}
