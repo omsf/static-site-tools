@@ -20,8 +20,8 @@ jobs:
           submodules: 'recursive'
 
       - name: Build site
-        #uses: omsf/static-site-tools/build/hugo@main
-        uses: ./build/hugo  # dev
+        uses: omsf/static-site-tools/build/hugo@main
+        #uses: ./build/hugo  # dev
         with:
           base-url: ${{ env.HUGO_BASE_URL }}
           source-directory: ${{ env.HUGO_SOURCE_DIR }}
