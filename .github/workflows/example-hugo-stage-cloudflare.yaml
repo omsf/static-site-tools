@@ -6,9 +6,6 @@ on:
     types:
       - completed
 
-env:
-  HUGO_OUTPUT_DIR: public
-
 jobs:
   get-metadata:
     if: ${{ github.repository == vars.MAIN_REPO }}
@@ -37,6 +34,7 @@ jobs:
       pr-headsha: ${{ needs.get-metadata.outputs.pr_headsha }}
       project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
       html-dir: ${{ env.HUGO_OUTPUT_DIR }}
+      remote-subdir: ${{ vars.HUGO_REMOTE_SUBDIR || "" }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
