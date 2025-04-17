@@ -33,7 +33,7 @@ jobs:
       pr-number: ${{ fromJSON(needs.get-metadata.outputs.pr_number) }}  # convert to int
       pr-headsha: ${{ needs.get-metadata.outputs.pr_headsha }}
       project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
-      html-dir: ${{ env.HUGO_OUTPUT_DIR }}
+      html-dir: ${{ vars.HUGO_OUTPUT_DIR || "public" }}
       remote-subdir: ${{ vars.HUGO_REMOTE_SUBDIR || "" }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
