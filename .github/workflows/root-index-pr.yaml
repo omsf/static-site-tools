@@ -30,12 +30,13 @@ jobs:
       - name: Create HTML file
         id: create-html
         run: |
-          echo "<html><body><ul><li><a href="hugo">Example Hugo Site</a></li></ul></body></html>" > index.html
+          mkdir root
+          echo "<html><body><ul><li><a href="hugo">Example Hugo Site</a></li></ul></body></html>" > root/index.html
 
       - name: Upload to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy index.html --project-name ${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch pr${{ needs.get-metadata.outputs.pr_number }}
+          command: pages deploy root --project-name ${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch pr${{ needs.get-metadata.outputs.pr_number }}
 
