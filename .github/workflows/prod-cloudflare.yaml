@@ -39,6 +39,7 @@ jobs:
           name: "site-build"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+        # TODO: split this off into an internal action?
       - name: Unpack artifact
         run: |
           tar -xzf site.tar.gz
@@ -46,7 +47,7 @@ jobs:
 
           mkdir deploy-dir
           if [ -n "${{ inputs.remote-subdir }}" ]; then
-            mkdir -p deploy/${{ inputs.remote-subdir }}
+            mkdir -p deploy-dir/${{ inputs.remote-subdir }}
             mv ${{ inputs.html-dir }}/* deploy-dir/${{ inputs.remote-subdir }}
           else
             mv ${{ inputs.html-dir }}/* deploy-dir
