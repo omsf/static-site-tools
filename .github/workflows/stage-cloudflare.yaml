@@ -23,11 +23,6 @@ on:
         description: "Root directory name for the site HTML artifact (usually 'public' for Hugo, '_site' for Jekyll, etc.)"
         required: true
         type: string
-      remote-subdir:
-        description: "Subdirectory of the site to deploy to"
-        required: false
-        type: string
-        default: ""
 
     secrets:
       CLOUDFLARE_API_TOKEN:
@@ -71,21 +66,13 @@ jobs:
           tar -xzf site.tar.gz
           rm site.tar.gz
 
-          mkdir deploy-dir
-          if [ -n "${{ inputs.remote-subdir }}" ]; then
-            mkdir -p deploy-dir/${{ inputs.remote-subdir }}
-            mv ${{ inputs.html-dir }}/* deploy-dir/${{ inputs.remote-subdir }}
-          else
-            mv ${{ inputs.html-dir }}/* deploy-dir
-          fi
-
       - name: Upload to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         id: deploy
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deploy-dir --project-name ${{ inputs.project-name }} --branch pr${{ inputs.pr-number }}
+          command: pages deploy ${{ inputs.html-dir }} --project-name ${{ inputs.project-name }} --branch pr${{ inputs.pr-number }}
 
   finish-deployment:
     runs-on: ubuntu-latest
