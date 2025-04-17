@@ -1,0 +1,41 @@
+name: Deploy root index -- PR
+# this is only used for internal needs
+
+on:
+  workflow_run:
+    workflows: ["Build from PR"]
+    types:
+      - completed
+
+jobs:
+  get-metadata:
+    if: ${{ github.repository == vars.MAIN_REPO }}
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.pr-metadata.outputs.pr-number }}
+      pr_headsha: ${{ steps.pr-metadata.outputs.pr-headsha }}
+
+    steps:
+      - name: Get PR metadata from action
+        id: pr-metadata
+        uses: omsf/static-site-tools/pr-info-from-workflow-run@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == vars.MAIN_REPO) }}
+    needs: get-metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create HTML file
+        id: create-html
+        run: |
+          echo "<html><body><ul><li><a href="hugo">Example Hugo Site</a></li></ul></body></html>" > index.html
+
+      - name: Upload to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy index.html --project-name ${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch pr${{ needs.get-metadata.outputs.pr_number }}
+
