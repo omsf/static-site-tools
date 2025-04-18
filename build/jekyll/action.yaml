@@ -14,6 +14,14 @@ inputs:
     description: The base URL for the site
     required: false
     default: ""
+  source-directory:
+    description: The directory containing the Jekyll site
+    required: false
+    default: "."
+  output-directory:
+    description: The directory to output the built site
+    required: false
+    default: "_site"
 
 
 runs:
@@ -22,6 +30,13 @@ runs:
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby-version }}
+
+    - name: Switch to source directory
+      shell: bash
+      run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
 
     - name: Install dependencies
       shell: bash
@@ -36,6 +51,7 @@ runs:
     - name: Create jekyll config
       shell: bash
       run: |
+        # for some reason I had difficulty with CLI-based baseurl
         echo "" > _extra_config.yml
         if [ "${{ inputs.site_url }}" != "" ]; then
           echo "url: ${{ inputs.site_url }}" >> _extra_config.yml
@@ -47,4 +63,4 @@ runs:
 
     - name: Build the site
       shell: bash
-      run: bundle exec jekyll build --config "_config.yml,_extra_config.yml"
+      run: bundle exec jekyll build --config "_config.yml,_extra_config.yml" -d ${{ inputs.output-directory }}
