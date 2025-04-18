@@ -64,3 +64,10 @@ runs:
     - name: Build the site
       shell: bash
       run: bundle exec jekyll build --config "_config.yml,_extra_config.yml" -d ${{ inputs.output-directory }}
+
+    - name: Switch back to home directory
+      shell: bash
+      run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd -
+        fi
