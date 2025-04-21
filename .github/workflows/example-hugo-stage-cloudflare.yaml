@@ -2,7 +2,7 @@ name: Upload to staging
 
 on:
   workflow_run:
-    workflows: ["Build from PR"]
+    workflows: ["Build Hugo site from PR"]
     types:
       - completed
 

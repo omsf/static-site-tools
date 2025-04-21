@@ -1,4 +1,4 @@
-name: Cleanup staging
+name: Cleanup Hugo site staging
 description: Cleanup staging environment; this occurs on PR merge or close
 
 on:
