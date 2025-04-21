@@ -1,3 +1,4 @@
 baseURL = 'https://static-site-tools-testing.pages.dev/hugo'
 languageCode = 'en-us'
 title = 'Hugo Testing Site'
+relativeURLs = true
