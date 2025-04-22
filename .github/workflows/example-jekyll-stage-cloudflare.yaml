@@ -34,7 +34,6 @@ jobs:
       pr-headsha: ${{ needs.get-metadata.outputs.pr_headsha }}
       project-name: ${{ vars.CLOUDFLARE_JEKYLL_PROJECT_NAME }}
       html-dir: ${{ vars.JEKYLL_OUTPUT_DIR || '_site' }}
-      artifact-name: jekyll-site
       label: Jekyll site
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

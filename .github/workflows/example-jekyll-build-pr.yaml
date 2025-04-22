@@ -43,7 +43,7 @@ jobs:
         if: ${{ github.event_name != 'schedule' }}
         uses: actions/upload-artifact@v4
         with:
-          name: jekyll-site
+          name: site-build
           path: site.tar.gz
           if-no-files-found: error
           retention-days: 1
