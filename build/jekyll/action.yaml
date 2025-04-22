@@ -34,15 +34,14 @@ runs:
     - name: Switch to source directory
       shell: bash
       run: |
-        if [ "${{ inputs.source-directory }}" != "." ]; then
-          cd ${{ inputs.source-directory }}
-        fi
-        pwd
-        ls -la
 
     - name: Install dependencies
       shell: bash
-      run: ls && bundle install
+      run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
+        bundle install
 
     - name: Versions
       shell: bash
@@ -54,22 +53,20 @@ runs:
       shell: bash
       run: |
         # for some reason I had difficulty with CLI-based baseurl
-        echo "" > _extra_config.yml
+        EXTRA_CONFIG="${{ inputs.source-directory }}/_extra_config.yml"
+        echo "" > $EXTRA_CONFIG
         if [ "${{ inputs.site_url }}" != "" ]; then
-          echo "url: ${{ inputs.site_url }}" >> _extra_config.yml
+          echo "url: ${{ inputs.site_url }}" >> $EXTRA_CONFIG
         fi
         if [ "${{ inputs.base_url }}" != "" ]; then
-          echo "baseurl: /${{ inputs.base_url }}" >> _extra_config.yml
+          echo "baseurl: /${{ inputs.base_url }}" >> $EXTRA_CONFIG
         fi
-        cat _extra_config.yml
+        cat $EXTRA_CONFIG
 
     - name: Build the site
       shell: bash
-      run: bundle exec jekyll build --config "_config.yml,_extra_config.yml" -d ${{ inputs.output-directory }}
-
-    - name: Switch back to home directory
-      shell: bash
-      run: |
+      run: 
         if [ "${{ inputs.source-directory }}" != "." ]; then
-          cd -
+          cd ${{ inputs.source-directory }}
         fi
+        bundle exec jekyll build --config "_config.yml,_extra_config.yml" -d ${{ inputs.output-directory }}
