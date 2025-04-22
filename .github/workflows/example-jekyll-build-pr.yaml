@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  JEKYLL_SOURCE_DIR: "example-hugo"
+  JEKYLL_SOURCE_DIR: "example-jekyll"
   JEKYLL_BASE_URL: ""
   JEKYLL_OUTPUT_DIR: "_site"
   # if you change JEKYLL_OUTPUT_DIR, also add a repository variable for it
@@ -20,8 +20,8 @@ jobs:
           submodules: 'recursive'
 
       - name: Build site
-        uses: omsf/static-site-tools/build/hugo@main
-        #uses: ./build/hugo  # dev
+        uses: omsf/static-site-tools/build/jekyll@main
+        #uses: ./build/jekyll  # dev
         with:
           base-url: ${{ env.JEKYLL_BASE_URL }}
           source-directory: ${{ env.JEKYLL_SOURCE_DIR }}
