@@ -20,8 +20,8 @@ jobs:
           submodules: 'recursive'
 
       - name: Build site
-        uses: omsf/static-site-tools/build/jekyll@main
-        #uses: ./build/jekyll  # dev
+        #uses: omsf/static-site-tools/build/jekyll@main
+        uses: ./build/jekyll  # dev
         with:
           base-url: ${{ env.JEKYLL_BASE_URL }}
           source-directory: ${{ env.JEKYLL_SOURCE_DIR }}
@@ -32,6 +32,8 @@ jobs:
         with:
           site-directory: ${{ env.JEKYLL_SOURCE_DIR }}/${{ env.JEKYLL_OUTPUT_DIR}}
           base-url: ${{ env.JEKYLL_BASE_URL }}
+
+
 
       - name: Make artifact
         shell: bash
