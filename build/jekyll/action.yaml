@@ -46,6 +46,9 @@ runs:
     - name: Versions
       shell: bash
       run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
         ruby --version
         cat Gemfile.lock
 
