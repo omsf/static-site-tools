@@ -68,7 +68,7 @@ runs:
 
     - name: Build the site
       shell: bash
-      run: 
+      run: |
         if [ "${{ inputs.source-directory }}" != "." ]; then
           cd ${{ inputs.source-directory }}
         fi
