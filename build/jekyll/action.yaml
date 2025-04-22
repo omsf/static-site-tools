@@ -37,6 +37,8 @@ runs:
         if [ "${{ inputs.source-directory }}" != "." ]; then
           cd ${{ inputs.source-directory }}
         fi
+        pwd
+        ls -la
 
     - name: Install dependencies
       shell: bash
