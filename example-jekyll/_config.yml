@@ -1,0 +1,9 @@
+# Welcome to Jekyll!
+#
+title: Jekyll Example Site
+description: >- # this means to ignore newlines until "baseurl:"
+  Example site for building Jekyll with our static site tools
+
+theme: minima
+plugins:
+  - jekyll-feed

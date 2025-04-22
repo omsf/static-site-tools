@@ -1,0 +1,39 @@
+name: Build Jekyll site from push
+
+on: 
+  push:
+    branches:
+      - main
+
+env:
+  JEKYLL_SOURCE_DIR: "example-jekyll"
+  JEKYLL_BASE_URL: ""
+  JEKYLL_OUTPUT_DIR: "public"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Build site
+        uses: omsf/static-site-tools/build/jekyll@main
+        with:
+          base-url: ${{ env.JEKYLL_BASE_URL }}
+          source-directory: ${{ env.JEKYLL_SOURCE_DIR }}
+          output-directory: ${{ env.JEKYLL_OUTPUT_DIR }}
+
+      - name: Make artifact
+        shell: bash
+        run: tar czf site.tar.gz -C ${{ env.JEKYLL_SOURCE_DIR }} ${{ env.JEKYLL_OUTPUT_DIR }}
+
+      - name: Upload artifact
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: site.tar.gz
+          if-no-files-found: error
+          retention-days: 1

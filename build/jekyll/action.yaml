@@ -14,6 +14,14 @@ inputs:
     description: The base URL for the site
     required: false
     default: ""
+  source-directory:
+    description: The directory containing the Jekyll site
+    required: false
+    default: "."
+  output-directory:
+    description: The directory to output the built site
+    required: false
+    default: "_site"
 
 
 runs:
@@ -23,28 +31,45 @@ runs:
       with:
         ruby-version: ${{ inputs.ruby-version }}
 
+    - name: Switch to source directory
+      shell: bash
+      run: |
+
     - name: Install dependencies
       shell: bash
-      run: bundle install
+      run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
+        bundle install
 
     - name: Versions
       shell: bash
       run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
         ruby --version
         cat Gemfile.lock
 
     - name: Create jekyll config
       shell: bash
       run: |
-        echo "" > _extra_config.yml
+        # for some reason I had difficulty with CLI-based baseurl
+        EXTRA_CONFIG="${{ inputs.source-directory }}/_extra_config.yml"
+        echo "" > $EXTRA_CONFIG
         if [ "${{ inputs.site_url }}" != "" ]; then
-          echo "url: ${{ inputs.site_url }}" >> _extra_config.yml
+          echo "url: ${{ inputs.site_url }}" >> $EXTRA_CONFIG
         fi
         if [ "${{ inputs.base_url }}" != "" ]; then
-          echo "baseurl: /${{ inputs.base_url }}" >> _extra_config.yml
+          echo "baseurl: /${{ inputs.base_url }}" >> $EXTRA_CONFIG
         fi
-        cat _extra_config.yml
+        cat $EXTRA_CONFIG
 
     - name: Build the site
       shell: bash
-      run: bundle exec jekyll build --config "_config.yml,_extra_config.yml"
+      run: |
+        if [ "${{ inputs.source-directory }}" != "." ]; then
+          cd ${{ inputs.source-directory }}
+        fi
+        bundle exec jekyll build --config "_config.yml,_extra_config.yml" -d ${{ inputs.output-directory }}

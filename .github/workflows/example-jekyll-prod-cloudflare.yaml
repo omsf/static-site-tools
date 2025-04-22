@@ -1,4 +1,4 @@
-name: Deploy Hugo site to production
+name: Deploy Jekyll site to production
 
 on:
   workflow_run:

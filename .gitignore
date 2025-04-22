@@ -1,2 +1,6 @@
 example-hugo/public
 example-hugo/.hugo_build.lock
+
+# pixi environments
+.pixi
+*.egg-info
