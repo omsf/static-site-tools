@@ -33,7 +33,7 @@ jobs:
           echo "Deleting all non-aliased deployments for branch: $BRANCH_NAME"
 
           DEPLOYMENTS=$(curl -s -X GET \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ vars.CLOUDFLARE_PROJECT_NAME }}/deployments" \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ inputs.project_name }}/deployments" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json")
 
@@ -65,7 +65,7 @@ jobs:
           for ID in $DEPLOYMENT_IDS; do
             echo "Deleting Deployment ID: $ID"
             curl -s -X DELETE \
-              "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ vars.CLOUDFLARE_PROJECT_NAME }}/deployments/$ID" \
+              "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ inputs.project_name }}/deployments/$ID" \
               -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
               -H "Content-Type: application/json"
           done
