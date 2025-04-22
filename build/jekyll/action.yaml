@@ -42,7 +42,7 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: bundle install
+      run: ls && bundle install
 
     - name: Versions
       shell: bash
