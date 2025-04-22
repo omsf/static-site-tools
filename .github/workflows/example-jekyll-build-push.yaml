@@ -8,7 +8,7 @@ on:
 env:
   JEKYLL_SOURCE_DIR: "example-jekyll"
   JEKYLL_BASE_URL: ""
-  JEKYLL_OUTPUT_DIR: "public"
+  JEKYLL_OUTPUT_DIR: "_site"
 
 jobs:
   build:
