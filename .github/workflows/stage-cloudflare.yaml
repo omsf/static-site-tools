@@ -102,7 +102,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status == 'success' && 'success' || 'failure' }}
           sha: ${{ inputs.pr-headsha }}
-          context: 'Upload to Cloudflare'
+          context: 'Upload ${{ inputs.label }} to Cloudflare'
           description: ${{ job.status == 'success' && env.DEPLOY_SUCCESS || env.DEPLOY_FAILURE }}
 
       - name: Post comment with metadata
