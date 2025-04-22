@@ -23,6 +23,14 @@ on:
         description: "Root directory name for the site HTML artifact (usually 'public' for Hugo, '_site' for Jekyll, etc.)"
         required: true
         type: string
+      artifact-name:
+        description: "The name of the artifact to download"
+        type: string
+        default: "site-build"
+      label:
+        description: "Label for the build (used in commit status and comment)"
+        type: string
+        default: "website"
 
     secrets:
       CLOUDFLARE_API_TOKEN:
@@ -43,7 +51,7 @@ jobs:
         with:
           status: pending
           sha: ${{ inputs.pr-headsha }}
-          context: 'Upload to Cloudflare'
+          context: 'Upload ${{ inputs.label }} to Cloudflare'
           token: ${{ secrets.GITHUB_TOKEN }}
 
 
@@ -58,7 +66,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           run-id: ${{ inputs.run-id }}
-          name: "site-build"
+          name: ${{ inputs.artifact-name }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unpack artifact
@@ -100,6 +108,7 @@ jobs:
       - name: Post comment with metadata
         uses: marocchino/sticky-pull-request-comment@v2
         with:
+          header: ${{ inputs.label }}
           number: ${{ inputs.pr-number }}
           message: |
             This PR has been staged at ${{ needs.stage-from-artifact.outputs.deployment_url }}.
