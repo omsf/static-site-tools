@@ -38,6 +38,8 @@ jobs:
         run: |
           tar -xzf site.tar.gz
           rm site.tar.gz
+          ls
+          ls ${{ inputs.html-dir }}
 
       - name: Upload to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
