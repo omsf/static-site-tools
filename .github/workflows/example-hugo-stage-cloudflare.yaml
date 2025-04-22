@@ -1,4 +1,4 @@
-name: Upload to staging
+name: Upload Hugo site to staging
 
 on:
   workflow_run:
