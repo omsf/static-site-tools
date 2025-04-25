@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  # SCHEDULE AND WORKFLOW DISPATCH ARE FOR TESTING
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 env:
   HUGO_SOURCE_DIR: "example-hugo"
