@@ -48,6 +48,7 @@ jobs:
 
     steps:
       - uses: myrotvorets/set-commit-status-action@v2.0.1
+        if: ${{ inputs.pr-number > 0 }}
         with:
           status: pending
           sha: ${{ inputs.pr-headsha }}
@@ -94,7 +95,7 @@ jobs:
 
     steps:
       - uses: myrotvorets/set-commit-status-action@v2.0.1
-        if: ${{ always() }}
+        if: ${{ inputs.pr-number > 0 }}
         env:
           DEPLOY_SUCCESS: Successfully staged preview.
           DEPLOY_FAILURE: Failed to stage preview.
@@ -107,6 +108,7 @@ jobs:
 
       - name: Post comment with metadata
         uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ inputs.pr-number > 0 }}
         with:
           header: ${{ inputs.label }}
           number: ${{ inputs.pr-number }}
