@@ -11,16 +11,27 @@ jobs:
     if: ${{ github.repository == vars.MAIN_REPO }}
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ steps.pr-metadata.outputs.pr-number }}
-      pr_headsha: ${{ steps.pr-metadata.outputs.pr-headsha }}
+      pr_number: ${{ steps.pr-metadata.outputs.pr-number || steps.backup-metadata.outputs.pr-number }}
+      pr_headsha: ${{ steps.pr-metadata.outputs.pr-headsha || steps.backup-metadata.outputs.pr-headsha }}
 
     steps:
       - name: Get PR metadata from action
         if: ${{ github.event_name == 'workflow_run' }}
         id: pr-metadata
         uses: omsf/static-site-tools/pr-info-from-workflow-run@main
+        if: ${{ github.event_name == 'workflow_run' }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Backup metadata for testing
+        id: backup-metadata
+        if: ${{
+          github.repository == vars.MAIN_REPO
+          && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
+        }}
+        shell: bash
+        run: |
+          echo "pr-headsha=test" | tee -a "$GITHUB_OUTPUT"
+          echo "pr-number=-1" | tee -a "$GITHUB_OUTPUT"
 
   stage:
     if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == vars.MAIN_REPO) }}
