@@ -16,14 +16,14 @@ jobs:
 
     steps:
       - name: Get PR metadata from action
-        if: ${{ github.event_name == 'workflow_run' }}
+        if: ${{ github.event.workflow_run.event == 'pull_request' }}
         id: pr-metadata
         uses: omsf/static-site-tools/pr-info-from-workflow-run@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Backup metadata for testing
         id: backup-metadata
-        if: ${{ github.repository == vars.MAIN_REPO && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name) }}
+        if: ${{ github.repository == vars.MAIN_REPO && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event.workflow_run.event) }}
         shell: bash
         run: |
           echo "pr-headsha=test" | tee -a "$GITHUB_OUTPUT"
