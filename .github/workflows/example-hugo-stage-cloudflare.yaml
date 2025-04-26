@@ -23,7 +23,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Backup metadata for testing
         id: backup-metadata
-        #if: ${{ github.repository == vars.MAIN_REPO && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name) }}
+        if: ${{ github.repository == vars.MAIN_REPO && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name) }}
         shell: bash
         run: |
           echo "pr-headsha=test" | tee -a "$GITHUB_OUTPUT"
