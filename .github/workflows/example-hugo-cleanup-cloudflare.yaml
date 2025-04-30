@@ -11,9 +11,10 @@ on:
 
 jobs:
   get-branch-name:
+    if: ${{ github.repository == vars.MAIN_REPO }}
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ steps.get_pr_number.outputs.pr_num }}
+      pr_number: ${{ fromJSON(steps.get_pr_number.outputs.pr_num) }}
     steps:
       - name: Get PR number
         id: get_pr_number
@@ -26,10 +27,7 @@ jobs:
           fi
           echo "pr_num=${pr_num}" | tee -a "$GITHUB_OUTPUT"
 
-          echo ${{ github.repository }}
-
   cleanup-staging:
-    #if: ${{ github.repository == vars.MAIN_REPO }}
     needs: get-branch-name
     uses: omsf/static-site-tools/.github/workflows/cleanup-cloudflare.yaml@main
     with:
