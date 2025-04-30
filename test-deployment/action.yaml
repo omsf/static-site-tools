@@ -1,0 +1,44 @@
+name: 'test-deployment'
+description: >
+  Verify a Cloudflare Pages deployment on a branch occurred within the last
+  N minutes.
+
+inputs:
+  CLOUDFLARE_API_TOKEN:
+    description: 'Cloudflare API token (from secrets)'
+    required: true
+  CLOUDFLARE_ACCOUNT_ID:
+    description: 'Cloudflare account ID (from secrets)'
+    required: true
+  CLOUDFLARE_PROJECT_NAME:
+    description: 'Cloudflare Pages project name (from repo variables)'
+    required: true
+  branch_name:
+    description: 'Branch to check'
+    required: true
+  deployment_minutes:
+    description: 'Time window in minutes'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Fetch latest deployment timestamp
+      id: fetch_deployment
+      shell: bash
+      run: |
+        set -euo pipefail
+        response=$(curl -s \
+          -H "Authorization: Bearer ${{ inputs.CLOUDFLARE_API_TOKEN }}" \
+          "https://api.cloudflare.com/client/v4/accounts/${{ inputs.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ inputs.CLOUDFLARE_PROJECT_NAME }}/deployments?branch=${{ inputs.branch_name }}&per_page=1")
+        timestamp=$(echo "$response" | jq -r '.result[0].created_on')
+        echo "timestamp=$timestamp" >> $GITHUB_OUTPUT
+
+    - name: Validate recent deployment
+      shell: bash
+      run: |
+        cutoff=$(date -u -d "${{ inputs.deployment_minutes }} minutes ago" +%Y-%m-%dT%H:%M:%SZ)
+        if [[ "${{ steps.fetch_deployment.outputs.timestamp }}" < "$cutoff" ]]; then
+          echo "::error::No deployment on branch '${{ inputs.branch_name }}' in the last ${{ inputs.deployment_minutes }} minutes (latest: ${{ steps.fetch_deployment.outputs.timestamp }})"
+          exit 1
+        fi

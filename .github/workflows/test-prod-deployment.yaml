@@ -1,0 +1,18 @@
+# test that a successful deployment to main has occurred
+on:
+  workflow_run:
+    workflows: ['Deploy Hugo site to production']
+    types: [completed]
+
+jobs:
+  check_main_deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Cloudflare deployment on main
+        uses: ./test-deployment
+        with:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          branch_name: main
+          deployment_minutes: 5
