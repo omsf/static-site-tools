@@ -1,0 +1,20 @@
+on:
+  workflow_run:
+    workflows: ['Cleanup Hugo site staging']
+    types: [completed]
+
+jobs:
+  check_pr1_deployment_count:
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: maybe make extract the right PR and check against any PR?
+      # Always checking against pr-1 should also be true, since it is
+      # idempotent, but would be nice to have more thorough testing
+      - name: Test pr-1 branch cleanup
+        uses: omsf/static-site-tools/test-deployment-count@main
+        with:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          branch_name: pr-1
+          n_deployments: 1
