@@ -1,3 +1,5 @@
+name: Test Hugo Cleanup
+
 on:
   workflow_run:
     workflows: ['Cleanup Hugo site staging']

@@ -1,4 +1,5 @@
-# test that a successful deployment to main has occurred
+name: Test Hugo Production Deployment
+
 on:
   workflow_run:
     workflows: ['Deploy Hugo site to production']
