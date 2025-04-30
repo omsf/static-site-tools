@@ -14,7 +14,7 @@ jobs:
     if: ${{ github.repository == vars.MAIN_REPO }}
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ fromJSON(steps.get_pr_number.outputs.pr_num) }}
+      pr_number: ${{ steps.get_pr_number.outputs.pr_num }}
     steps:
       - name: Get PR number
         id: get_pr_number
@@ -31,7 +31,7 @@ jobs:
     needs: get-branch-name
     uses: omsf/static-site-tools/.github/workflows/cleanup-cloudflare.yaml@main
     with:
-      pr_number: ${{ needs.get-branch-name.outputs.pr_number }}
+      pr_number: ${{ fromJSON(needs.get-branch-name.outputs.pr_number) }}
       project_name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
