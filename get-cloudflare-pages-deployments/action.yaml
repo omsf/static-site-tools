@@ -13,10 +13,11 @@ inputs:
   branch_name:
     description: 'Branch to check'
     required: true
-  outputs:
-    deployments:
-      description: 'List of deployments'
-      value: ${{ steps.get_deployments.outputs.deployments }}
+
+outputs:
+  deployments:
+    description: 'List of deployments'
+    value: ${{ steps.get_deployments.outputs.deployments }}
 
 runs:
   using: 'composite'
