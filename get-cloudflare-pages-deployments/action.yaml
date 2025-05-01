@@ -77,7 +77,7 @@ runs:
             account=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
             project=os.getenv("INPUT_PROJECT_NAME"),
             token=os.getenv("CLOUDFLARE_API_TOKEN"),
-            branch=os.getenv("INPUT_BRANCH"),
+            branch=os.getenv("INPUT_BRANCH_NAME"),
         )
         print(json.dumps(deployments, indent=2))
         with open(os.getenv("GITHUB_OUTPUT"), "a") as f:
