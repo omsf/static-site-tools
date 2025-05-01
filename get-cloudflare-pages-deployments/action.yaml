@@ -76,9 +76,9 @@ runs:
             return deployments
 
         deployments = get_deployments(
-            account=os.getenv("CLOUDFLARE_ACCOUNT_ID"),
+            account=os.getenv("INPUT_CLOUDFLARE_ACCOUNT_ID"),
             project=os.getenv("INPUT_PROJECT_NAME"),
-            token=os.getenv("CLOUDFLARE_API_TOKEN"),
+            token=os.getenv("INPUT_CLOUDFLARE_API_TOKEN"),
             branch=os.getenv("INPUT_BRANCH_NAME"),
         )
         print(json.dumps(deployments, indent=2))
