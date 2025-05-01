@@ -31,7 +31,7 @@ runs:
     - name: Validate deployment count
       shell: bash
       run: |
-        count=$(echo "${{ steps.fetch_deployments.outputs.deployments }}" | jq '. | length')
+        count=$(echo '${{ steps.fetch_deployments.outputs.deployments }}' | jq '. | length')
         if [ $count -ne ${{ inputs.n_deployments }} ]; then
           echo "::error::Expected ${{ inputs.n_deployments }} deployments on branch '${{ inputs.branch_name }}', but found ${{ steps.fetch_deployments.outputs.count }}."
           exit 1
