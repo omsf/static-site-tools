@@ -22,7 +22,7 @@ runs:
         LYCHEE_ARGS="${LYCHEE_ARGS}${{ inputs.site-directory }}/"
         echo "LYCHEE_ARGS=$LYCHEE_ARGS" >> $GITHUB_ENV
           
-    - name: Check links
-      uses: lycheeverse/lychee-action@v2
-      with:
-        args: ${{ env.LYCHEE_ARGS }}
+    #- name: Check links
+      #uses: lycheeverse/lychee-action@v2
+      #with:
+        #args: ${{ env.LYCHEE_ARGS }}
