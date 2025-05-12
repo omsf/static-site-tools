@@ -113,6 +113,6 @@ jobs:
           header: ${{ inputs.label }}
           number: ${{ inputs.pr-number }}
           message: |
-            This PR has been staged at ${{ needs.stage-from-artifact.outputs.pages-deployment-alias-url }}.
+            This PR has been staged at ${{ needs.stage-from-artifact.outputs.deployment_url }}.
 
             It has been updated for commit ${{ inputs.pr-headsha }}.
