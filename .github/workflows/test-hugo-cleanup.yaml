@@ -8,6 +8,7 @@ on:
 jobs:
   check_pr1_deployment_count:
     runs-on: ubuntu-latest
+    if: ${{ github.repository == vars.MAIN_REPO }}
     steps:
       # TODO: maybe make extract the right PR and check against any PR?
       # Always checking against pr-1 should also be true, since it is
