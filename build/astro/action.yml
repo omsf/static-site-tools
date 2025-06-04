@@ -1,0 +1,18 @@
+name: Build Astro Site
+description: Build a site with Astro using Bun
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Dependencies with Bun
+      uses: oven-sh/setup-bun@v2
+      shell: bash
+      run: bun install --frozen-lockfile
+
+    - name: Build Astro site
+      shell: bash
+      run: bun run build
+
+
+
+
