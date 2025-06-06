@@ -1,16 +1,26 @@
 name: Build Astro Site
 description: Build a site with Astro using Bun
 
+inputs:
+  source-directory:
+    description: 'Source directory containing the Astro project'
+    required: false
+    default: '.'
+
 runs:
   using: 'composite'
   steps:
     - name: Install Dependencies with Bun
       uses: oven-sh/setup-bun@v2
+
+    - name: Install Dependencies
       shell: bash
+      working-directory: ${{ inputs.source-directory }}
       run: bun install --frozen-lockfile
 
     - name: Build Astro site
       shell: bash
+      working-directory: ${{ inputs.source-directory }}
       run: bun run build
 
 
