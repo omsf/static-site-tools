@@ -152,6 +152,114 @@ variable. [GitHub docs](https://docs.github.com/en/actions/writing-workflows/cho
   above.
 
 ## Installing for Hugo
+To build a Hugo project on a PR, you will use the following:
+```yaml
+name: Build Hugo site from PR
 
+on:
+  # You may do an on-push when uploading to production
+  pull_request:
+    branches:
+      - main
+
+env:
+  HUGO_SOURCE_DIR: "."  # Change this if your Hugo site is in a subdirectory
+  HUGO_BASE_URL: ""
+  HUGO_OUTPUT_DIR: "public"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Build site # Build using base standards
+        uses: omsf/static-site-tools/build/hugo@main
+        with:
+          base-url: ${{ env.HUGO_BASE_URL }}
+          source-directory: ${{ env.HUGO_SOURCE_DIR }}
+          output-directory: ${{ env.HUGO_OUTPUT_DIR }}
+
+      - name: Make artifact # Create an archive to upload
+        shell: bash
+        run: tar czf site.tar.gz -C ${{ env.HUGO_SOURCE_DIR }} ${{ env.HUGO_OUTPUT_DIR }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: site.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+```
 
 ## Installing for Jekyll
+
+## Deploying to Cloudflare Pages
+Once you create an archive in the site.tar.gz format, you will need to deploy to Cloudflare Pages. If all you need is a staging environment where you get link previews, you will use this:
+```yaml
+name: Upload Hugo site to staging
+
+on:
+  workflow_run:
+    # The below is valid for building for staging. For prod, you may need to update this to your production builds
+    workflows: ["<Name of your PR build workflow here (for example: Build Hugo site from PR)>"]
+    types:
+      - completed
+
+jobs:
+  get-metadata:
+    if: ${{ github.repository == vars.MAIN_REPO }}
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.pr-metadata.outputs.pr-number }}
+      pr_headsha: ${{ steps.pr-metadata.outputs.pr-headsha }}
+
+    steps:
+      - name: Get PR metadata from action
+        if: ${{ github.event.workflow_run.event == 'pull_request' }}
+        id: pr-metadata
+        uses: omsf/static-site-tools/pr-info-from-workflow-run@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  stage:
+    if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == vars.MAIN_REPO) }}
+    needs: get-metadata
+    uses: omsf/static-site-tools/.github/workflows/stage-cloudflare.yaml@main
+    permissions:
+      statuses: write
+      pull-requests: write
+    with:
+      run-id: ${{ github.event.workflow_run.id }}
+      pr-number: ${{ fromJSON(needs.get-metadata.outputs.pr_number) }}
+      pr-headsha: ${{ needs.get-metadata.outputs.pr_headsha }}
+      project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+      html-dir: ${{ vars.HUGO_OUTPUT_DIR || 'public' }} # Note the defaults here, this can be updated if needed.
+      label: Hugo site # Optional
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+```
+
+You will also need the cleanup workflow to clean up any leftover builds:
+```yaml
+name: Cleanup Hugo site staging
+
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  cleanup-staging:
+    if: ${{ github.repository == vars.MAIN_REPO }}
+    uses: omsf/static-site-tools/.github/workflows/cleanup-cloudflare.yaml@main
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+      project_name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+```
