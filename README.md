@@ -211,7 +211,6 @@ on:
 
 jobs:
   get-metadata:
-    if: ${{ github.repository == vars.MAIN_REPO }}
     runs-on: ubuntu-latest
     outputs:
       pr_number: ${{ steps.pr-metadata.outputs.pr-number }}
@@ -226,7 +225,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   stage:
-    if: ${{ (github.event.workflow_run.conclusion == 'success') && (github.repository == vars.MAIN_REPO) }}
+    if: ${{ (github.event.workflow_run.conclusion == 'success') }}
     needs: get-metadata
     uses: omsf/static-site-tools/.github/workflows/stage-cloudflare.yaml@main
     permissions:
@@ -254,7 +253,6 @@ on:
 
 jobs:
   cleanup-staging:
-    if: ${{ github.repository == vars.MAIN_REPO }}
     uses: omsf/static-site-tools/.github/workflows/cleanup-cloudflare.yaml@main
     with:
       pr_number: ${{ github.event.pull_request.number }}
