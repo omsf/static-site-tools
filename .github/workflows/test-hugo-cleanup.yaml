@@ -6,6 +6,13 @@ on:
     types: [completed]
 
 jobs:
+  no-op:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository != vars.MAIN_REPO }}
+    steps:
+      - name: Skip on forks
+        run: echo "Skipping test on fork repository"
+
   check_pr1_deployment_count:
     runs-on: ubuntu-latest
     if: ${{ github.repository == vars.MAIN_REPO }}
