@@ -2,6 +2,8 @@
 
 This Terraform module creates a Cloudflare Pages project and generates an API token with the necessary permissions to manage the project.
 
+Note: to deploy this module, you'll need a local API token with permissions to create tokens and to write/edit Cloudflare Pages projects. The easiest way to generate this is to start making a new account token with the "Create Additional Tokens" permission, and then to add Cloudflare Pages Edit permission.
+
 ## Features
 
 - Creates a Cloudflare Pages project with configurable name and production branch
