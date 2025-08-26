@@ -3,12 +3,12 @@ description: Build a site with Astro using Bun
 
 inputs:
   source-directory:
-    description: 'Source directory containing the Astro project'
+    description: "Source directory containing the Astro project"
     required: false
-    default: '.'
+    default: "."
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Install Dependencies with Bun
       uses: oven-sh/setup-bun@v2
@@ -16,13 +16,9 @@ runs:
     - name: Install Dependencies
       shell: bash
       working-directory: ${{ inputs.source-directory }}
-      run: bun install --frozen-lockfile
+      run: bun install --frozen-lockfile -p
 
     - name: Build Astro site
       shell: bash
       working-directory: ${{ inputs.source-directory }}
       run: bun run build
-
-
-
-
