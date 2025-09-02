@@ -13,7 +13,7 @@ This Terraform module manages GitHub Actions secrets and variables for Cloudflar
 
 ```hcl
 module "github_vars" {
-  source = "./modules/github_vars"
+  source = "github.com/omsf/static-site-tools//modules/github_vars"
 
   github_repository         = "owner/repository-name"
   cloudflare_account_id     = "your-cloudflare-account-id"
