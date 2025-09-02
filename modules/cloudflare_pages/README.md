@@ -15,7 +15,7 @@ Note: to deploy this module, you'll need a local API token with permissions to c
 
 ```hcl
 module "cloudflare_pages" {
-  source = "./modules/cloudflare_pages"
+  source = "github.com/omsf/static-site-tools//modules/cloudflare_pages"
 
   cloudflare_token_name   = "my-pages-token"
   cloudflare_project_name = "my-awesome-site"
