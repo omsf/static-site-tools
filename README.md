@@ -106,6 +106,46 @@ deployments from the branch when the PR is closed.
 
 ## Preparing to Install
 
+### Automatically Using OpenTofu/Terraform
+---
+We are able to setup the required Cloudflare Pages project and required GitHub Secrets and Variables using OpenTofu/Terraform.
+
+To do so, you would create an OpenTofu project and use the two modules in the module folder which would look like this:
+
+```hcl
+locals {
+    cloudflare_account_id = "your-cloudflare-account-id"
+    cloudflare_project_name = "your-pages-project-name"
+}
+
+module "cloudflare_pages" {
+  source = "github.com/omsf/static-site-tools//modules/cloudflare_pages"
+
+  cloudflare_token_name   = "my-pages-token"
+  cloudflare_project_name = local.cloudflare_project_name
+  cloudflare_account_id   = local.cloudflare_account_id
+  
+  # Optional: specify a custom compatibility date
+  cf_compat_date = "2024-01-01"
+}
+
+module "github_vars" {
+  source = "github.com/omsf/static-site-tools//modules/github_vars"
+
+  github_repository         = "owner/repository-name"
+  cloudflare_account_id     = local.cloudflare_account_id
+  cloudflare_token          = "$(module.cloudflare_pages.cloudflare_token)"
+  cloudflare_project_name   = local.cloudflare_project_name
+  
+  # Optional: customize variable names
+  cloudflare_account_id_var_name   = "CLOUDFLARE_ACCOUNT_ID"
+  cloudflare_token_var_name        = "CLOUDFLARE_API_TOKEN"
+  cloudflare_project_name_var_name = "CLOUDFLARE_PROJECT_NAME"
+}
+```
+
+### Manually
+---
 ### Cloudflare
 
 Please note that we have a [separate page](cloudflare-setup.md) documenting how
