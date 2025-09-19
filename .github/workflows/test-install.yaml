@@ -23,5 +23,7 @@ jobs:
         run: |
           pytest -v
       - name: Run integration tests
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           bash test_install.sh
