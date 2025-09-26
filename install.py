@@ -97,7 +97,7 @@ def update_reusable_workflow_references(
 ):
     """Pin reusable workflow references to the selected ref."""
     file_path = pathlib.Path(file_path)
-    repos_to_update = {value for value in (repo, "omsf/static-site-tools") if value}
+    repos_to_update = {repo, "omsf/static-site-tools"}
 
     original_content = file_path.read_text()
     updated_content = original_content
