@@ -110,7 +110,7 @@ def update_reusable_workflow_references(
         )
         total_replacements += replacements
 
-    if total_replacements and updated_content != original_content:
+    if total_replacements:
         file_path.write_text(updated_content)
 
 
