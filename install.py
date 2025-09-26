@@ -1,6 +1,7 @@
-import urllib.request
 import os
 import pathlib
+import re
+import urllib.request
 
 
 def make_parser():
@@ -61,6 +62,7 @@ def install(
         "prod-cloudflare.yaml",
         "stage-cloudflare.yaml",
     ]
+
     for file in files:
         url = url_base + file
         destination = pathlib.Path(workflow_dir) / file
@@ -68,6 +70,7 @@ def install(
 
         # Edit the downloaded file to replace the source directory
         edit_source_directory(destination, platform, site_dir)
+        update_reusable_workflow_references(destination, repo, ref_value)
 
 
 def edit_source_directory(file_path: os.PathLike, platform: str, site_dir: str):
@@ -88,9 +91,27 @@ def edit_source_directory(file_path: os.PathLike, platform: str, site_dir: str):
     with open(file_path, "w") as f:
         f.write(content)
 
-    # Only print message if replacement actually occurred
-    if content != original_content:
-        print(f"Updated {file_path}: replaced {old_value} with {new_value}")
+
+def update_reusable_workflow_references(
+    file_path: os.PathLike, repo: str, ref_for_uses: str
+):
+    """Pin reusable workflow references to the selected ref."""
+    file_path = pathlib.Path(file_path)
+    repos_to_update = {value for value in (repo, "omsf/static-site-tools") if value}
+
+    original_content = file_path.read_text()
+    updated_content = original_content
+    total_replacements = 0
+
+    for target_repo in repos_to_update:
+        pattern = re.compile(rf"(uses:\s+{re.escape(target_repo)}/[^\s@]+@)([^\s]+)")
+        updated_content, replacements = pattern.subn(
+            lambda match: match.group(1) + ref_for_uses, updated_content
+        )
+        total_replacements += replacements
+
+    if total_replacements and updated_content != original_content:
+        file_path.write_text(updated_content)
 
 
 if __name__ == "__main__":
