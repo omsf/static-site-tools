@@ -6,15 +6,21 @@ This module contains comprehensive tests for the install script functions,
 including argument parsing, file downloading, and file editing functionality.
 """
 
-import unittest
-import tempfile
+import argparse
 import pathlib
 import shutil
+import tempfile
+import unittest
 from unittest.mock import patch
-import argparse
 
 # Import the functions we want to test
-from install import make_parser, download_file, install, edit_source_directory
+from install import (
+    download_file,
+    edit_source_directory,
+    install,
+    make_parser,
+    update_reusable_workflow_references,
+)
 
 
 class TestMakeParser(unittest.TestCase):
@@ -176,16 +182,12 @@ env:
         with open(file_path, "w") as f:
             f.write(content)
 
-        with patch("install.print") as mock_print:
-            edit_source_directory(file_path, "hugo", "my-hugo-site")
+        edit_source_directory(file_path, "hugo", "my-hugo-site")
 
         with open(file_path, "r") as f:
             result = f.read()
 
         self.assertEqual(result, expected)
-        mock_print.assert_called_once_with(
-            f'Updated {file_path}: replaced "example-hugo" with "my-hugo-site"'
-        )
 
     def test_edit_source_directory_astro(self):
         """Test editing Astro workflow file."""
@@ -297,6 +299,69 @@ jobs:
         self.assertEqual(result, expected)
 
 
+class TestUpdateReusableWorkflowReferences(unittest.TestCase):
+    """Test pinning reusable workflow references."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.temp_dir)
+        self.file_path = pathlib.Path(self.temp_dir) / "workflow.yaml"
+
+    def test_updates_default_repo_references(self):
+        content = """jobs:
+  build:
+    steps:
+      - uses: omsf/static-site-tools/build/hugo@main
+      - uses: actions/checkout@v4
+"""
+        expected = """jobs:
+  build:
+    steps:
+      - uses: omsf/static-site-tools/build/hugo@v1.2.3
+      - uses: actions/checkout@v4
+"""
+        self.file_path.write_text(content)
+
+        update_reusable_workflow_references(
+            self.file_path, "omsf/static-site-tools", "v1.2.3"
+        )
+
+        self.assertEqual(self.file_path.read_text(), expected)
+
+    def test_updates_multiple_repo_variants(self):
+        content = """jobs:
+  deploy:
+    steps:
+      - uses: omsf/static-site-tools/build/hugo@main
+      - uses: myfork/static-site-tools/common-tests@main
+"""
+        expected = """jobs:
+  deploy:
+    steps:
+      - uses: omsf/static-site-tools/build/hugo@abc123
+      - uses: myfork/static-site-tools/common-tests@abc123
+"""
+        self.file_path.write_text(content)
+
+        update_reusable_workflow_references(
+            self.file_path, "myfork/static-site-tools", "abc123"
+        )
+
+        self.assertEqual(self.file_path.read_text(), expected)
+
+    def test_no_update_when_no_matching_repo(self):
+        content = """jobs:
+  lint:
+    steps:
+      - uses: actions/checkout@v4
+"""
+        self.file_path.write_text(content)
+
+        update_reusable_workflow_references(self.file_path, "custom/repo", "main")
+
+        self.assertEqual(self.file_path.read_text(), content)
+
+
 class TestInstall(unittest.TestCase):
     """Test the main install function."""
 
@@ -304,9 +369,10 @@ class TestInstall(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.temp_dir)
 
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_default_parameters(self, mock_download, mock_edit):
+    def test_install_default_parameters(self, mock_download, mock_edit, mock_update):
         """Test install function with default parameters."""
         install("hugo", "branch", "main")
 
@@ -321,19 +387,30 @@ class TestInstall(unittest.TestCase):
 
         self.assertEqual(mock_download.call_count, len(expected_files))
         self.assertEqual(mock_edit.call_count, len(expected_files))
+        self.assertEqual(mock_update.call_count, len(expected_files))
 
         # Check URLs and destinations
         for i, file in enumerate(expected_files):
-            expected_url = f"https://raw.githubusercontent.com/omsf/static-site-tools/refs/heads/main/.github/workflows/example-hugo-{file}"
+            expected_url = (
+                "https://raw.githubusercontent.com/omsf/static-site-tools/"
+                "refs/heads/main/.github/workflows/example-hugo-"
+                f"{file}"
+            )
             expected_dest = pathlib.Path(".github/workflows") / file
 
             args, _ = mock_download.call_args_list[i]
             self.assertEqual(args[0], expected_url)
             self.assertEqual(args[1], expected_dest)
 
+            update_args, _ = mock_update.call_args_list[i]
+            self.assertEqual(update_args[0], expected_dest)
+            self.assertEqual(update_args[1], "omsf/static-site-tools")
+            self.assertEqual(update_args[2], "main")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_custom_parameters(self, mock_download, mock_edit):
+    def test_install_custom_parameters(self, mock_download, mock_edit, mock_update):
         """Test install function with custom parameters."""
         install("astro", "tag", "v1.0.0", "custom/workflows", "my-astro-site")
 
@@ -347,7 +424,11 @@ class TestInstall(unittest.TestCase):
 
         # Check that files are downloaded to custom directory
         for i, file in enumerate(expected_files):
-            expected_url = f"https://raw.githubusercontent.com/omsf/static-site-tools/refs/tags/v1.0.0/.github/workflows/example-astro-{file}"
+            expected_url = (
+                "https://raw.githubusercontent.com/omsf/static-site-tools/"
+                "refs/tags/v1.0.0/.github/workflows/example-astro-"
+                f"{file}"
+            )
             expected_dest = pathlib.Path("custom/workflows") / file
 
             download_args, _ = mock_download.call_args_list[i]
@@ -359,9 +440,15 @@ class TestInstall(unittest.TestCase):
             self.assertEqual(edit_args[1], "astro")
             self.assertEqual(edit_args[2], "my-astro-site")
 
+            update_args, _ = mock_update.call_args_list[i]
+            self.assertEqual(update_args[0], expected_dest)
+            self.assertEqual(update_args[1], "omsf/static-site-tools")
+            self.assertEqual(update_args[2], "v1.0.0")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_custom_repo(self, mock_download, mock_edit):
+    def test_install_custom_repo(self, mock_download, mock_edit, mock_update):
         """Test install function with custom repository."""
         install(
             "hugo", "branch", "main", ".github/workflows", ".", "myorg/my-static-tools"
@@ -377,64 +464,101 @@ class TestInstall(unittest.TestCase):
 
         # Check that files are downloaded from custom repository
         for i, file in enumerate(expected_files):
-            expected_url = f"https://raw.githubusercontent.com/myorg/my-static-tools/refs/heads/main/.github/workflows/example-hugo-{file}"
+            expected_url = (
+                "https://raw.githubusercontent.com/myorg/my-static-tools/"
+                "refs/heads/main/.github/workflows/example-hugo-"
+                f"{file}"
+            )
             expected_dest = pathlib.Path(".github/workflows") / file
 
             download_args, _ = mock_download.call_args_list[i]
             self.assertEqual(download_args[0], expected_url)
             self.assertEqual(download_args[1], expected_dest)
 
+            update_args, _ = mock_update.call_args_list[i]
+            self.assertEqual(update_args[0], expected_dest)
+            self.assertEqual(update_args[1], "myorg/my-static-tools")
+            self.assertEqual(update_args[2], "main")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_tag_version(self, mock_download, mock_edit):
+    def test_install_tag_version(self, mock_download, mock_edit, mock_update):
         """Test install function with tag version."""
         install("jekyll", "tag", "v2.1.0")
 
         # Check that URL uses tags path for tag version
-        expected_url = "https://raw.githubusercontent.com/omsf/static-site-tools/refs/tags/v2.1.0/.github/workflows/example-jekyll-build-pr.yaml"
+        expected_url = (
+            "https://raw.githubusercontent.com/omsf/static-site-tools/"
+            "refs/tags/v2.1.0/.github/workflows/example-jekyll-build-pr.yaml"
+        )
 
         first_call_args, _ = mock_download.call_args_list[0]
         first_call_url = first_call_args[0]
         self.assertEqual(first_call_url, expected_url)
 
+        update_args, _ = mock_update.call_args_list[0]
+        self.assertEqual(update_args[2], "v2.1.0")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_branch_version(self, mock_download, mock_edit):
+    def test_install_branch_version(self, mock_download, mock_edit, mock_update):
         """Test install function with branch version."""
         install("hugo", "branch", "main")
 
         # Check that URL uses heads/main path for branch version
-        expected_url = "https://raw.githubusercontent.com/omsf/static-site-tools/refs/heads/main/.github/workflows/example-hugo-build-pr.yaml"
+        expected_url = (
+            "https://raw.githubusercontent.com/omsf/static-site-tools/"
+            "refs/heads/main/.github/workflows/example-hugo-build-pr.yaml"
+        )
 
         first_call_args, _ = mock_download.call_args_list[0]
         first_call_url = first_call_args[0]
         self.assertEqual(first_call_url, expected_url)
 
+        update_args, _ = mock_update.call_args_list[0]
+        self.assertEqual(update_args[2], "main")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_commit_version(self, mock_download, mock_edit):
+    def test_install_commit_version(self, mock_download, mock_edit, mock_update):
         """Test install function with commit version."""
         install("astro", "commit", "abc123def456")
 
         # Check that URL uses commit hash directly
-        expected_url = "https://raw.githubusercontent.com/omsf/static-site-tools/abc123def456/.github/workflows/example-astro-build-pr.yaml"
+        expected_url = (
+            "https://raw.githubusercontent.com/omsf/static-site-tools/"
+            "abc123def456/.github/workflows/example-astro-build-pr.yaml"
+        )
 
         first_call_args, _ = mock_download.call_args_list[0]
         first_call_url = first_call_args[0]
         self.assertEqual(first_call_url, expected_url)
 
+        update_args, _ = mock_update.call_args_list[0]
+        self.assertEqual(update_args[2], "abc123def456")
+
+    @patch("install.update_reusable_workflow_references")
     @patch("install.edit_source_directory")
     @patch("install.download_file")
-    def test_install_custom_branch(self, mock_download, mock_edit):
+    def test_install_custom_branch(self, mock_download, mock_edit, mock_update):
         """Test install function with custom branch."""
         install("hugo", "branch", "develop")
 
         # Check that URL uses heads/develop path for custom branch
-        expected_url = "https://raw.githubusercontent.com/omsf/static-site-tools/refs/heads/develop/.github/workflows/example-hugo-build-pr.yaml"
+        expected_url = (
+            "https://raw.githubusercontent.com/omsf/static-site-tools/"
+            "refs/heads/develop/.github/workflows/example-hugo-build-pr.yaml"
+        )
 
         first_call_args, _ = mock_download.call_args_list[0]
         first_call_url = first_call_args[0]
         self.assertEqual(first_call_url, expected_url)
+
+        update_args, _ = mock_update.call_args_list[0]
+        self.assertEqual(update_args[2], "develop")
 
 
 class TestIntegration(unittest.TestCase):
@@ -447,12 +571,18 @@ class TestIntegration(unittest.TestCase):
     @patch("install.urllib.request.urlretrieve")
     def test_full_workflow_simulation(self, mock_urlretrieve):
         """Test the complete workflow with mocked HTTP requests."""
+        commit_sha = "abcdef1234567890"
         # Mock file content that would be downloaded
         mock_content = """name: Build Hugo site from PR
 
 env:
   HUGO_SOURCE_DIR: "example-hugo"
   HUGO_BASE_URL: ""
+
+jobs:
+  build:
+    steps:
+      - uses: omsf/static-site-tools/build/hugo@main
 """
 
         def mock_retrieve(url, destination):
@@ -466,8 +596,8 @@ env:
         with patch("install.print"):
             install(
                 "hugo",
-                "branch",
-                "main",
+                "commit",
+                commit_sha,
                 str(output_dir),
                 "my-hugo-site",
                 "omsf/static-site-tools",
@@ -483,6 +613,8 @@ env:
         # Verify that the content was properly edited
         self.assertIn('HUGO_SOURCE_DIR: "my-hugo-site"', content)
         self.assertNotIn('HUGO_SOURCE_DIR: "example-hugo"', content)
+        self.assertIn(f"omsf/static-site-tools/build/hugo@{commit_sha}", content)
+        self.assertNotIn("omsf/static-site-tools/build/hugo@main", content)
 
 
 if __name__ == "__main__":
