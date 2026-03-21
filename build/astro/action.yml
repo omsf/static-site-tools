@@ -1,5 +1,5 @@
 name: Build Astro Site
-description: Build a site with Astro using Bun
+description: Build a site with Astro using npm
 
 inputs:
   source-directory:
@@ -10,15 +10,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install Dependencies with Bun
-      uses: oven-sh/setup-bun@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+        cache: "npm"
+        cache-dependency-path: ${{ inputs.source-directory }}/package-lock.json
 
     - name: Install Dependencies
       shell: bash
       working-directory: ${{ inputs.source-directory }}
-      run: bun install --frozen-lockfile -p
+      run: npm ci
 
     - name: Build Astro site
       shell: bash
       working-directory: ${{ inputs.source-directory }}
-      run: bun run build
+      run: npm run build
