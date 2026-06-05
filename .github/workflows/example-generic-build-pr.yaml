@@ -1,0 +1,42 @@
+name: Package generic static site from PR
+
+on:
+  pull_request:
+    branches:
+      - main
+  # SCHEDULE AND WORKFLOW DISPATCH USED FOR TESTING
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+env:
+  GENERIC_SOURCE_DIR: "example-generic"
+  GENERIC_BASE_URL: ""
+  GENERIC_OUTPUT_DIR: "."
+  # if you change GENERIC_OUTPUT_DIR, also add a repository variable for it
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Test site
+        uses: omsf/static-site-tools/common-tests@main
+        with:
+          site-directory: ${{ env.GENERIC_SOURCE_DIR }}/${{ env.GENERIC_OUTPUT_DIR}}
+          base-url: ${{ env.GENERIC_BASE_URL }}
+
+      - name: Make artifact
+        shell: bash
+        run: tar czf "$RUNNER_TEMP/site.tar.gz" -C ${{ env.GENERIC_SOURCE_DIR }} ${{ env.GENERIC_OUTPUT_DIR }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: ${{ runner.temp }}/site.tar.gz
+          if-no-files-found: error
+          retention-days: 1

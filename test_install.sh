@@ -14,7 +14,7 @@ repo=$(gh api repos/:owner/:repo --jq '.name')
 
 mkdir -p test_install_dir
 
-platforms=("hugo" "astro" "jekyll")
+platforms=("hugo" "astro" "jekyll" "generic")
 fnames=("build-pr.yaml" "build-push.yaml" "prod-cloudflare.yaml" "stage-cloudflare.yaml" "cleanup-cloudflare.yaml")
 
 exitcode=0

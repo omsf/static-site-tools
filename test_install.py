@@ -36,7 +36,7 @@ class TestMakeParser(unittest.TestCase):
     def test_platform_choices(self):
         """Test that platform argument accepts valid choices."""
         # Test valid platforms
-        for platform in ["astro", "hugo", "jekyll"]:
+        for platform in ["astro", "generic", "hugo", "jekyll"]:
             args = self.parser.parse_args([platform])
             self.assertEqual(args.platform, platform)
 
@@ -559,6 +559,33 @@ class TestInstall(unittest.TestCase):
 
         update_args, _ = mock_update.call_args_list[0]
         self.assertEqual(update_args[2], "develop")
+
+    @patch("install.update_reusable_workflow_references")
+    @patch("install.edit_source_directory")
+    @patch("install.download_file")
+    def test_install_generic_platform(self, mock_download, mock_edit, mock_update):
+        """Test install function with the generic platform."""
+        install("generic", "branch", "main", ".github/workflows", "static")
+
+        expected_url = (
+            "https://raw.githubusercontent.com/omsf/static-site-tools/"
+            "refs/heads/main/.github/workflows/example-generic-build-pr.yaml"
+        )
+        expected_dest = pathlib.Path(".github/workflows") / "build-pr.yaml"
+
+        first_call_args, _ = mock_download.call_args_list[0]
+        self.assertEqual(first_call_args[0], expected_url)
+        self.assertEqual(first_call_args[1], expected_dest)
+
+        edit_args, _ = mock_edit.call_args_list[0]
+        self.assertEqual(edit_args[0], expected_dest)
+        self.assertEqual(edit_args[1], "generic")
+        self.assertEqual(edit_args[2], "static")
+
+        update_args, _ = mock_update.call_args_list[0]
+        self.assertEqual(update_args[0], expected_dest)
+        self.assertEqual(update_args[1], "omsf/static-site-tools")
+        self.assertEqual(update_args[2], "main")
 
 
 class TestIntegration(unittest.TestCase):

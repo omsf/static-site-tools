@@ -9,7 +9,7 @@ def make_parser():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("platform", choices=["astro", "hugo", "jekyll"])
+    parser.add_argument("platform", choices=["astro", "generic", "hugo", "jekyll"])
 
     # Mutually exclusive group for version selection
     version_group = parser.add_mutually_exclusive_group()

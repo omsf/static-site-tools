@@ -1,0 +1,34 @@
+name: Package generic static site from push
+
+on:
+  push:
+    branches:
+      - main
+  # SCHEDULE AND WORKFLOW DISPATCH ARE FOR TESTING
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+env:
+  GENERIC_SOURCE_DIR: "example-generic"
+  GENERIC_OUTPUT_DIR: "."
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Make artifact
+        shell: bash
+        run: tar czf "$RUNNER_TEMP/site.tar.gz" -C ${{ env.GENERIC_SOURCE_DIR }} ${{ env.GENERIC_OUTPUT_DIR }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: ${{ runner.temp }}/site.tar.gz
+          if-no-files-found: error
+          retention-days: 1
