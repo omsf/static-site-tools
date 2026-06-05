@@ -23,7 +23,7 @@ jobs:
 
       - name: Make artifact
         shell: bash
-        run: tar czf "$RUNNER_TEMP/site.tar.gz" -C ${{ env.GENERIC_SOURCE_DIR }} ${{ env.GENERIC_OUTPUT_DIR }}
+        run: tar --exclude-vcs -czf "$RUNNER_TEMP/site.tar.gz" -C ${{ env.GENERIC_SOURCE_DIR }} ${{ env.GENERIC_OUTPUT_DIR }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
