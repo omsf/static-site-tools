@@ -14,7 +14,7 @@ repo=$(gh api repos/:owner/:repo --jq '.name')
 
 mkdir -p test_install_dir
 
-platforms=("hugo" "astro" "jekyll")
+platforms=("hugo" "astro" "jekyll" "generic")
 fnames=("build-pr.yaml" "build-push.yaml" "prod-cloudflare.yaml" "stage-cloudflare.yaml" "cleanup-cloudflare.yaml")
 
 exitcode=0
@@ -46,9 +46,18 @@ PY
             exitcode=1
         fi
 
-        if ! grep -q "@$version" "$file2"; then
-            echo "    Missing pinned reference @$version in $file2"
-            exitcode=1
+        repo_uses_pattern="uses:[[:space:]]+($owner/$repo|omsf/static-site-tools)/[^[:space:]@]+@"
+
+        if grep -Eq "$repo_uses_pattern" "$temp_expected"; then
+            if ! grep -Eq "$repo_uses_pattern" "$file2"; then
+                echo "    Missing expected reusable workflow/action reference in $file2"
+                exitcode=1
+            elif ! grep -q "@$version" "$file2"; then
+                echo "    Missing pinned reference @$version in $file2"
+                exitcode=1
+            fi
+        else
+            echo "    No reusable workflow/action references to pin in $file2."
         fi
 
         rm -f "$temp_expected"
