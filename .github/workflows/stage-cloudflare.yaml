@@ -107,7 +107,7 @@ jobs:
           description: ${{ job.status == 'success' && env.DEPLOY_SUCCESS || env.DEPLOY_FAILURE }}
 
       - name: Post comment with metadata
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: ${{ inputs.pr-number > 0 }}
         with:
           header: ${{ inputs.label }}
