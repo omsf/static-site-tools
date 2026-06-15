@@ -76,7 +76,7 @@ jobs:
           rm site.tar.gz
 
       - name: Upload to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         id: deploy
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
