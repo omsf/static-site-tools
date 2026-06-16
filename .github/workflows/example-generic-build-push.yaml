@@ -26,7 +26,7 @@ jobs:
         run: tar --exclude-vcs -czf "$RUNNER_TEMP/site.tar.gz" -C ${{ env.GENERIC_SOURCE_DIR }} ${{ env.GENERIC_OUTPUT_DIR }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site-build
           path: ${{ runner.temp }}/site.tar.gz
