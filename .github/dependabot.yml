@@ -4,3 +4,22 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      day: monday
+  - package-ecosystem: npm
+    directory: "/example-astro"
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      example-astro:
+        patterns:
+          - "*"
+  - package-ecosystem: bundler
+    directory: "/example-jekyll"
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      example-jekyll:
+        patterns:
+          - "*"
