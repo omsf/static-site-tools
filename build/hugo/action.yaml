@@ -18,7 +18,7 @@ inputs:
     description: The directory to output the built site
     required: false
     default: "public"
-  update_modules:
+  update-modules:
     description: Update Hugo modules before building the site
     required: false
     default: "true"
@@ -35,7 +35,7 @@ runs:
           && sudo dpkg -i ${{ runner.temp }}/hugo.deb
         sudo snap install dart-sass
     - name: Get modules
-      if: ${{ inputs.update_modules == 'true' }}
+      if: ${{ inputs.update-modules == 'true' }}
       shell: bash
       run: |
         hugo mod get -u --source "${{ inputs.source-directory }}"
