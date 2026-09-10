@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 
 env:
+  HUGO_VERSION: "0.166.0"
   HUGO_SOURCE_DIR: "example-hugo"
   HUGO_BASE_URL: ""
   HUGO_OUTPUT_DIR: "public"
@@ -27,6 +28,7 @@ jobs:
         uses: omsf/static-site-tools/build/hugo@main
         #uses: ./build/hugo  # dev
         with:
+          hugo-version: ${{ env.HUGO_VERSION }}
           base-url: ${{ env.HUGO_BASE_URL }}
           source-directory: ${{ env.HUGO_SOURCE_DIR }}
           output-directory: ${{ env.HUGO_OUTPUT_DIR }}
