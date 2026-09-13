@@ -38,7 +38,9 @@ runs:
       if: ${{ inputs.update-modules == 'true' }}
       shell: bash
       run: |
-        hugo mod get -u --source "${{ inputs.source-directory }}"
+        pushd "${{ inputs.source-directory }}"
+        hugo mod get -u
+        popd
     - name: Build the site
       shell: bash
       run: |
