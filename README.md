@@ -188,10 +188,17 @@ Once you've added those two secrets, add the variables that will be used.
 Select the "Variables" tab, and click "New repository variable" to create a new
 variable. [GitHub docs](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#creating-configuration-variables-for-a-repository) You'll need to add the following variables:
 
-* `CLOUDFLARE_PROJECT_NAME`: The name of the Cloudflare Pages project you obtained
-  above.
+* `MAIN_REPO`: The name of your GitHub repository, in the form `owner/repo`.
+  This should be the repo that has the secrets/permissions to deploy; this is
+  used to prevent errors from occurring when workflows are triggered on forks.
+* (Hugo) `CLOUDFLARE_PROJECT_NAME`: The name of the Cloudflare Pages project
+  you obtained above.
+* (Jekyll): `CLOUDFLARE_JEKYLL_PROJECT_NAME`: The name of the Cloudflare Pages
+  project you obtained above. This differs for Jekyll so that in this
+  repository we can test both Hugo and Jekyll.
 
 ## Installing for Hugo
+
 
 
 ## Installing for Jekyll
